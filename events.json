@@ -1,1 +1,1 @@
-[{"id": 0, "event": "Do stuff", "date": {"day": 12, "month": 2, "year": 2023}}, {"id": 1, "event": "Surfing", "date": {"day": 13, "month": 5, "year": 2023}}, {"id": 2, "event": "Do Stuff", "date": {"day": 2, "month": 12, "year": 2023}}, {"id": 3, "event": "Do stuff", "date": {"day": 2, "month": 12, "year": 2023}}]
+[{"id": 0, "event": "test", "date": "2023-05-02"}]
