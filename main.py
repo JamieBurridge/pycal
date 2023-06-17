@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 from enum import Enum
 
-
 DATE_FORMAT = "%Y-%m-%d"
 filename = "events.json"
 
@@ -20,12 +19,14 @@ class Options(Enum):
     NEW = "new"
     ALL = "all"
     HELP = "help"
+    DEL = "del"
 
 
 def main():
     options = {
         Options.NEW.value: {"description": "Create a new event."},
         Options.ALL.value: {"description": "Show all events."},
+        Options.DEL.value: {"description": "Delete an event."},
         Options.HELP.value: {"description": "Explains all options."}
     }
 
@@ -34,12 +35,14 @@ def main():
         # Get user options (new event, delete event, see events)
         option = ""
         while option not in options.keys():
-            option = input(f"What would you like to do? [new/all/help] ").lower()
+            option = input(f"What would you like to do? [new/all/del/help] ").lower()
 
         if option == Options.NEW.value:
             create_new_calendar_event()
         elif option == Options.ALL.value:
             show_all_events()
+        elif option == Options.DEL.value:
+            delete_event()
         elif option == Options.HELP.value:
             describe_options(options)
 
@@ -70,9 +73,7 @@ def create_new_calendar_event():
                     "date": datetime_object.strftime(DATE_FORMAT)
                 })
 
-            # Save to file
-            with open(filename, "w", newline="") as file:
-                json.dump(events, file)
+            save_events(events)
         else:
             print("Incorrect date, please try again.")
             create_new_calendar_event()
@@ -90,18 +91,34 @@ def get_int_input(prompt):
         get_int_input(prompt)
 
 
-def show_all_events():
+def show_all_events(show_id=False):
     events_list = sort_datetime_list(events, "date")
 
     if len(events_list) == 0:
         print("You have not created any events")
     else:
         for event in events_list:
-            print(f"{event['date']} | {event['event']}")
+            if show_id:
+                print(f"{event['id']} | {event['date']} | {event['event']}")
+            else:
+                print(f"{event['date']} | {event['event']}")
 
 
 def sort_datetime_list(dt_list, key):
     return sorted(dt_list, key=lambda item: datetime.strptime(item[key], DATE_FORMAT).date())
+
+
+def delete_event():
+    show_all_events(show_id=True)
+    delete_id = get_int_input("Which event do you want to delete? ")
+
+    # Save to file
+    save_events(events.pop(delete_id))
+
+
+def save_events(new_events):
+    with open(filename, "w", newline="") as file:
+        json.dump(new_events, file)
 
 
 def describe_options(options):
