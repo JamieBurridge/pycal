@@ -18,8 +18,9 @@ except ValueError:
 class Options(Enum):
     NEW = "new"
     ALL = "all"
-    HELP = "help"
     DEL = "del"
+    HELP = "help"
+    EXIT = "exit"
 
 
 def main():
@@ -27,7 +28,8 @@ def main():
         Options.NEW.value: {"description": "Create a new event."},
         Options.ALL.value: {"description": "Show all events."},
         Options.DEL.value: {"description": "Delete an event."},
-        Options.HELP.value: {"description": "Explains all options."}
+        Options.HELP.value: {"description": "Explains all options."},
+        Options.EXIT.value: {"description": "Exit the program."}
     }
 
     is_done = False
@@ -35,7 +37,7 @@ def main():
         # Get user options (new event, delete event, see events)
         option = ""
         while option not in options.keys():
-            option = input(f"What would you like to do? [new/all/del/help] ").lower()
+            option = input(f"What would you like to do? {get_options_string()} ").lower()
 
         if option == Options.NEW.value:
             create_new_calendar_event()
@@ -43,12 +45,18 @@ def main():
             show_all_events()
         elif option == Options.DEL.value:
             delete_event()
+        elif option == Options.EXIT.value:
+            is_done = True
         elif option == Options.HELP.value:
             describe_options(options)
 
-        is_done = check_if_done()
-
     print("Goodbye!")
+
+
+def get_options_string():
+    options_list = [option.value for option in Options]
+    options_string = "[" + "/".join(options_list) + "]"
+    return options_string
 
 
 def create_new_calendar_event():
@@ -56,22 +64,17 @@ def create_new_calendar_event():
         # Get user day, month and year
         user_day = get_int_input("Input a day: ")
         user_month = get_int_input("Input a month: ")
-        user_year = get_int_input("Input a year: ")
+        user_year = get_int_input("Input a year: ", min_length=4)
         user_event = input("Input an event: ")
 
         # Check if in range
         cal_range = calendar.monthrange(user_year, user_month)
         if 1 <= user_day <= cal_range[1]:
-            # Create datetime obj
-            datetime_object = datetime(user_year, user_month, user_day)
-
-            # Add to events list
-            events.append(
-                {
-                    "id": len(events),
-                    "event": user_event,
-                    "date": datetime_object.strftime(DATE_FORMAT)
-                })
+            events.append({
+                "id": len(events),
+                "event": user_event,
+                "date": datetime(user_year, user_month, user_day).strftime(DATE_FORMAT)
+            })
 
             save_events(events)
         else:
@@ -82,10 +85,10 @@ def create_new_calendar_event():
         create_new_calendar_event()
 
 
-def get_int_input(prompt):
+def get_int_input(prompt, min_length=1):
     try:
         result = int(input(prompt))
-        return result
+        return result if len(str(result)) >= min_length else get_int_input(prompt)
     except ValueError:
         print("Value must be a number, please try again.")
         get_int_input(prompt)
@@ -109,11 +112,13 @@ def sort_datetime_list(dt_list, key):
 
 
 def delete_event():
-    show_all_events(show_id=True)
-    delete_id = get_int_input("Which event do you want to delete? ")
+    global events
 
-    # Save to file
-    save_events(events.pop(delete_id))
+    show_all_events(show_id=True)
+    delete_id = get_int_input("Which event do you want to delete? [number] ")
+
+    events = [event for event in events if event["id"] != delete_id]
+    save_events(events)
 
 
 def save_events(new_events):
@@ -124,16 +129,6 @@ def save_events(new_events):
 def describe_options(options):
     for opt_key, opt_value in options.items():
         print(f"{opt_key} | {opt_value['description']}")
-
-
-def check_if_done():
-    answers = ["yes", "no"]
-    answer = ""
-
-    while answer.lower() not in answers:
-        answer = input("Are you finished? [yes/no] ")
-
-    return True if answer == "yes" else False
 
 
 main()
