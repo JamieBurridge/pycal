@@ -1,2 +1,2 @@
 # pycal
-Pycal is a simple calender CLI
+Pycal is a simple, lightweight list-style calendar.
