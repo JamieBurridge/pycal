@@ -76,6 +76,8 @@ def create_new_calendar_event():
                 "date": datetime(user_year, user_month, user_day).strftime(DATE_FORMAT)
             })
 
+            print("Event created successfully!")
+
             save_events(events)
         else:
             print("Incorrect date, please try again.")
